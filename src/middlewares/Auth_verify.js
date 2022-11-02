@@ -16,7 +16,7 @@ const verifyToken = (req,res,next) => {
       })
    }else{
      return res.status(401).json({
-       message:'Missing token key'
+       message:'Unauthorized: please signin to continue!'
      })
    }
 }

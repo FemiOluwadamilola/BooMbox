@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const trackSchema = new mongoose.Schema({
 	userId:{
 		type:mongoose.Schema.Types.ObjectId,
-		required:true
+		required:true,
 	},
 	title:{
 	   type:String,
@@ -11,6 +11,14 @@ const trackSchema = new mongoose.Schema({
 	audio:{
 	   type:String,
 	   required:true,
+	},
+	path:{
+	   type:String,
+	   required:true,
+	},
+	stream_counts:{
+	   type:Number,
+	   default:0
 	},
 	likes:{
 	   type:Array

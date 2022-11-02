@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const verifyToken = require('../middlewares/Auth_verify');
 
-// User Signup route;
+// USER SIGNUP ROUTE
 router.post('/signup', async (req,res) => {
 	 try{
 	  const {username,email} = req.body;
@@ -20,10 +20,13 @@ router.post('/signup', async (req,res) => {
 	 	 const savedUser = await newUser.save();
 	 	 res.status(200).json(savedUser);
 	 	}else{
-	 	   res.status(403).json({err_message:'Ooops email already in use by another user...'})
+	 	   res.status(403).json({message:'Ooops this email already in use!'})
 	 	}
 	 }catch(err){
-	 	res.status(500).json({err_message:err.message})
+		  return res.status(500).json({
+	  		message:'Server error: something went wrong please try again later',
+	  		error:err
+	  	});
 	 }
 })
 
@@ -40,7 +43,7 @@ const generateRefreshToken = (user) => {
 
 
 
-// User Signin route
+// USER SIGNIN ROUTE
 router.post('/signin', async(req,res) => {
   const {email,password} = req.body;
   try{
@@ -60,13 +63,16 @@ router.post('/signin', async(req,res) => {
       	 	 }
       	 })
       }else{
-      	 res.status(403).json({err_message:'Ooops incorrect password...'})
+      	 res.status(403).json({message:'Ooops incorrect password...'})
       }
     }else{
-      res.status(403).json({err_message:'Ooops email not recognised...'})
+      res.status(403).json({message:'Ooops email not recognised...'})
     }
   }catch(err){
-  	res.status(500).json({error:err.message});
+	  	return res.status(500).json({
+	  		message:'Server error: something went wrong please try again later',
+	  		error:err
+	  	});
   }
 });
 

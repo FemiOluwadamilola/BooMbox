@@ -7,10 +7,10 @@ const Track = require('../models/Track');
 const PlayList = require('../models/Play_list');
 const verifyToken = require('../middlewares/Auth_verify');
 
-// get all tracks
+// GET ALL TRACKS ROUTE
 router.get('/', async (req,res) => {
 	try{
-	   const tracks = await Track.find().select('userId title audio likes comments').sort({createdAt:-1});
+	   const tracks = await Track.find().select('userId title audio stream_counts likes comments').sort({createdAt:-1});
 	   res.status(200).json({
 	   	 response:{
 	   	 	 object_count:tracks.length,
@@ -20,24 +20,35 @@ router.get('/', async (req,res) => {
 			   	 		_id:doc._id,
 			   	 		title:doc.title,
 				   	 	audio:doc.audio,
+				   	 	streamed:doc.stream_counts,
 				   	 	likes:doc.likes,
 				   	 	comments:doc.comments
 		   	 		},
-		   	 		request:{
-			   	 	   type:'GET',
-			   	 	   description:'STREAM_TRACK',
-			   	 	   url:`http://localhost:5000/api/tracks/${doc._id}/`
+		   	 		requests:{
+			   	 	  stream:{
+				   	 	   type:'GET',
+				   	 	   description:'STREAM_TRACK',
+				   	 	   url:`${process.env.BOOMBOX_URL}/tracks/${doc._id}/`
+			   	 	  },
+			   	 	  download:{
+			   	 	  	   type:'GET',
+				   	 	   description:'DOWNLOAD_TRACK',
+				   	 	   url:`${process.env.BOOMBOX_URL}/tracks/download/${doc._id}/`
+			   	 	  }
 		   	 		}
 		   	 	}
 		   	 })
 	   	 }
 	   });
 	}catch(err){
-		return res.status(500).json({error:err.message})
+		return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
 	}
 });
 
-//track upload
+//TRACK UPLOAD ROUTE
 router.post('/', verifyToken, async (req,res) => {
 	 try{
    		const user = await User.findById(req.user.id);
@@ -45,7 +56,7 @@ router.post('/', verifyToken, async (req,res) => {
    	   	      const storage = multer.diskStorage({
   		 	 destination:'./tracks_uploads',
   		 	 filename:(req,file,cb) => {
-  		 	 	 cb(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname))
+  		 	 	 cb(null, "AUD" +"_"+ Date.now() + path.extname(file.originalname))
   		 	 }
   		 })
   		 const track = multer({
@@ -71,6 +82,7 @@ router.post('/', verifyToken, async (req,res) => {
 		  		  			userId:req.user.id,
 		  		  			title:req.body.title,
 		  		  			audio:req.file.filename,
+		  		  			path:req.file.path,
 		  		  		});
 
 		  		  	 const savedTrack = await newTrack.save();
@@ -85,7 +97,7 @@ router.post('/', verifyToken, async (req,res) => {
 			  		  	 	 request:{
 			  		  	 	  	 type:'GET',
 			  		  	 	  	 description:'GET_TRACKS',
-			  		  	 	  	 url:'http://localhost:5000/api/tracks'
+			  		  	 	  	 url:`${process.env.BOOMBOX_URL}/tracks/`
 			  		  	 	  }
 		  		  	 	}
 		  		  	 });
@@ -100,11 +112,14 @@ router.post('/', verifyToken, async (req,res) => {
    	   	 })
    	   }
 	 }catch(err){
-	 	 return res.status(500).json({error:err})
+	 	return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
 	 }
 }) 
 
-// delete track
+// DELETE TRACK ROUTE
 router.delete('/:id', verifyToken, async (req,res) => {
 	try{
 	  const user = await User.findById(req.user.id);
@@ -124,7 +139,7 @@ router.delete('/:id', verifyToken, async (req,res) => {
 	  		 				request:{
 	  		 					type:'POST',
 	  		 					description:"UPLOAD_TRACK",
-	  		 					url:`http://localhost:5000/api/tracks/`,
+	  		 					url:`${process.env.BOOMBOX_URL}/tracks/`,
 	  		 					body:{
 	  		 					   title:'String',
 	  		 					   audio:'File'
@@ -136,21 +151,32 @@ router.delete('/:id', verifyToken, async (req,res) => {
 	  		 }
 	  		})
 	  	}else{
-	  	  return res.status(403).json({message:'Oops action forbidden...'})
+	  	  return res.status(403).json({message:'Track already deleted from the database...'})
 	  	}
 	  }else{
 	  	return res.status(403).json({message:'Oops sorry this user cannot delete this track'});
 	  }
 	}catch(err){
-		return res.status(500).json({error:err});
+		return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 });
 	}
 })
 
-// Stream track
+// TRACK STREAMING ROUTE
 router.get('/:id', async (req,res) => {
 	try{
 		const track = await Track.findById(req.params.id);
 		if(track){
+			if(track.stream_counts >= 0){
+				const streamed = track.stream_counts += 1;
+				await Track.findByIdAndUpdate(req.params.id,{
+			    	$set:{
+			    	  stream_counts:streamed
+			    	}
+		    	})
+			}
 			 res.writeHead(200,{'content-Type':'audio/mp3'});
 		   	 const stream = fs.createReadStream(path.join(__dirname,`../../tracks_uploads/${track.audio}`));
 		   	 stream.pipe(res);
@@ -161,9 +187,38 @@ router.get('/:id', async (req,res) => {
 		}
 	}catch(err){
 		return res.status(500).json({
-			error:err
-		})
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
 	}
 });
+
+// TRACK DOWNLOAD ROUTE
+router.get('/download/:id',verifyToken, async (req,res) => {
+	try{
+	  const user = await User.findById(req.user.id)
+	  if(user){
+		  const track = await Track.findById(req.params.id);
+		  if(track){
+		  	 res.download(track.path,track.audio)
+		  }else{
+		  	 return res.status(404).json({
+		  	 	message:'Track not found'
+		  	 })
+		  }
+	  }else{
+	  	 return res.status(403).json({
+	  	 	 message:'Please signup to download'
+	  	 })
+	  }
+	}catch(err){
+	   return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
+	}
+});
+
+
 
 module.exports = router;

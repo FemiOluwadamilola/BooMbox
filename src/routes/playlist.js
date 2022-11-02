@@ -4,7 +4,7 @@ const Track = require('../models/Track');
 const PlayList = require('../models/Play_list');
 const verifyToken = require('../middlewares/Auth_verify');
 
-// Create track playlist
+// CREATE TRACK PLAYLIST
 router.post('/', verifyToken, async (req,res) => {
   try{
  	 const user = await User.findById(req.user.id);
@@ -32,7 +32,7 @@ router.post('/', verifyToken, async (req,res) => {
 			    		 request:{
 			    		 	  type:'PUT',
 			    		 	  description:'UPLOAD_TRACK_TO_PLAYLIST',
-			    		 	  url:'http://localhost:5000/api/playlists'
+			    		 	  url:`${process.env.BOOMBOX_URL}/playlists`
 			    		 }
 			    	}
 			    });
@@ -46,11 +46,14 @@ router.post('/', verifyToken, async (req,res) => {
  	 	return res.status(403).json({message:'Auth failed'})
  	 }
   }catch(err){
-  	return res.status(500).json({error:err})
+  	 return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
   }
 })
 
-// Add Tracks to play list
+// ADD TRACKS TO PLAYLIST
 router.put('/', verifyToken, async (req,res) => {
 	  try{
 	 	 const playList = await PlayList.findById(req.body.playlistId);
@@ -64,7 +67,7 @@ router.put('/', verifyToken, async (req,res) => {
 	 	 	 	  		 request:{
 	 	 	 	  		 	 type:'GET',
 	 	 	 	  		 	 description:'GET_TRACKS_IN_PLAYLIST',
-	 	 	 	  		 	 url:'http://localhost:5000/api/playlist'
+	 	 	 	  		 	 url:`${process.env.BOOMBOX_URL}/playlists`
 	 	 	 	  		 }
 	 	 	 	  	}
 	 	 	 	  })
@@ -78,35 +81,63 @@ router.put('/', verifyToken, async (req,res) => {
 	 	 	 return res.status(404).json({message:'Oops sorry playlist not found!'})
 	 	 }
 	 }catch(err){
-	 	 return res.status(500).json({error:err});
+	 	  return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
 	 }
 })
 
 
-// view playlist
+// VIEW PLAYLISTS
 router.get('/', verifyToken, async (req,res) => {
 	try{
 		const user = await User.findById(req.user.id);
 		if(user){
-			  user.play_list.map(async (playlist) => {
-			  	 // console.log(playlist)
-			  	 const playList = await PlayList.findOne({_id:playlist})
-			  	 if(playList){
-				  	 res.status(200).json({
-				  	 	 playlist:playList.name
-				  	 })
-			  	 }else{
-			  	 	 return res.status(404).json({
-			  	 	 	 message:'Playlist not found!'
-			  	 	 })
-			  	 }
-			  	 // console.log(playList.name)
-			  })
+			const playList = await PlayList.find();
+			if(playList.userId === user.id){
+				 // res.status(200).json({
+				 // 	  playlist:playList.name
+				 // })
+				 console.log(playList.name)
+			}else{
+				 return res.status(404).json({
+				 	  message:'Playlist not found!'
+				 })
+			}
 		}else{
 			 return res.status(403).json({message:'Auth failed'})
 		}
 	}catch(err){
-		 return res.status(500).json({error:err})
+		  return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
+	}
+})
+
+
+// SHARE PLAYLIST WITH FRIEND
+router.get('/:id/share_playlist', verifyToken, async (req,res) => {
+	try{
+
+	}catch(err){
+		 return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
+	}
+})
+
+// GET PLAYLIST FROM FRIEND
+router.get('/get_playlist', verifyToken, async(req,res) => {
+	try{
+		
+	}catch(err){
+		 return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
 	}
 })
 
