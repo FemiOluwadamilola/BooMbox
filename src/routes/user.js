@@ -1,16 +1,23 @@
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const verifyToken = require('../middlewares/Auth_verify');
 
 
-// update user profile
-router.put('/:id', async (req,res) => {
-  if(req.body.userId === req.params.id){
+// UPDATE USER PROFILE
+router.put('/', verifyToken, async (req,res) => {
+	const user = await User.findById(req.user.id)
+  if(user){
   	if(req.body.password){
   		try{
   		  res.body.password = bcrypt.hash(req.body.password, bcrypt.genSalt(10))
   		}catch(err){
-  			return res.status(500).json({err_message:err.message});
+  			return res.status(500).json({
+			 	  response:{
+			 	  	 message:'Server error: something went wrong, please try again later',
+			 	 		 error:err
+			 	  }
+			 })
   		}
   	}else{
   		try{
@@ -18,25 +25,48 @@ router.put('/:id', async (req,res) => {
   		  	$set: req.body
   		  },{new:true})
   		}catch(err){
-  			return res.status(500).json({err_message:err.message})
+  			return res.status(500).json({
+			 	  response:{
+			 	  	 message:'Server error: something went wrong, please try again later',
+			 	 		 error:err
+			 	  }
+			 })
   		}
   	}
   }else{
-  	res.status(404).json({err_message:'Invalid user id'})
+  	return res.status(404).json({
+			response:{
+				message:'User not Found!'
+			}
+		})
   }
 })
 
-// delete user account
-router.delete('/:id', async (req,res) => {
-	if(req.body.userId === req.params.id){
+// DELETE USER ACCOUNT
+router.delete('/', verifyToken, async (req,res) => {
+	const user = await User.findById(req.user.id);
+	if(user){
 		try{
 		  await User.findByIdAndDelete(req.params.id);
-		  res.status(200).json({success_msg:"Account successfully deleted..."})
+		  res.status(200).json({
+		  	response:{
+		  		message:"Account successfully deleted..."
+		  	}
+		  })
 		}catch(err){
-			return res.status(500).json({err_message:err.message});
+				return res.status(500).json({
+			 	  response:{
+			 	  	 message:'Server error: something went wrong, please try again later',
+			 	 		 error:err
+			 	  }
+			 })
 		}
 	}else{
-		return res.status(403).json({err_message:'Invalid User Id'})
+		return res.status(404).json({
+			response:{
+				message:'User not Found!'
+			}
+		})
 	}
 })
 module.exports = router;

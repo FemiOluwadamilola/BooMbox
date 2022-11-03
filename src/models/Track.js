@@ -20,6 +20,10 @@ const trackSchema = new mongoose.Schema({
 	   type:Number,
 	   default:0
 	},
+	download_counts:{
+		type:Number,
+	   default:0
+	},
 	likes:{
 	   type:Array
 	},

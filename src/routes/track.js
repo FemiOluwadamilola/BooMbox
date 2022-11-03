@@ -200,7 +200,17 @@ router.get('/download/:id',verifyToken, async (req,res) => {
 	  if(user){
 		  const track = await Track.findById(req.params.id);
 		  if(track){
+		  	// download track
 		  	 res.download(track.path,track.audio)
+		  	 // update the download count
+		  	 if(track.download_counts >= 0){
+				const downloaded = track.download_counts += 1;
+				await Track.findByIdAndUpdate(req.params.id,{
+			    	$set:{
+			    	  download_counts:downloaded
+			    	}
+		    	})
+			}
 		  }else{
 		  	 return res.status(404).json({
 		  	 	message:'Track not found'

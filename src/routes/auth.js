@@ -17,8 +17,21 @@ router.post('/signup', async (req,res) => {
 	 	 	password:hashedPassword
 	 	 });
 
-	 	 const savedUser = await newUser.save();
-	 	 res.status(200).json(savedUser);
+	 	 await newUser.save();
+	 	 res.status(200).json({
+	 	 	 response:{
+	 	 	 	  message:'Signup successfully made...',
+	 	 	 	  request:{
+	 	 	 	  	 method_type:'POST',
+	 	 	 	  	 desc:'SIGNIN_USER',
+	 	 	 	  	 url:`${process.env.BOOMBOX_URL}/auth/signin`,
+	 	 	 	  	 body:{
+	 	 	 	  	 	 email:'user email address',
+	 	 	 	  	 	 password:'user password'
+	 	 	 	  	 }
+	 	 	 	  }
+	 	 	 }
+	 	 });
 	 	}else{
 	 	   res.status(403).json({message:'Ooops this email already in use!'})
 	 	}

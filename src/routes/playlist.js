@@ -132,9 +132,61 @@ router.get('/:id/share_playlist', verifyToken, async (req,res) => {
 // GET PLAYLIST FROM FRIEND
 router.get('/get_playlist', verifyToken, async(req,res) => {
 	try{
-		
+		const playlist = await PlayList.findById(req.body.playlistId);
+		if(playlist){
+			const user = await User.findById(req.user.id);
+			const friend = await User.findById(playlist.userId);
+			if(!user.play_list.includes(playlist.id)){
+				 await User.updateOne({$push:{play_list:playlist.id}});
+				 res.status(201).json({
+				 	  response:{
+				 	  	message:`${friend.username} playlist is now sync with yours!`
+				 	  }
+				 })
+			}else{
+				return res.status(403).json({
+				 	  message:'Oops sorry playlist can only be shared once!'
+				 })
+			}
+		}else{
+			return res.status(404).json({
+				 message:'Playlist not found!'
+			})
+		}
 	}catch(err){
 		 return res.status(500).json({
+		 	 message:'Server error: something went wrong, please try again later',
+		 	 error:err
+		 })
+	}
+})
+
+// DELETE PLAYLIST
+router.delete('/:id', verifyToken, async (req,res) => {
+	try{
+	  const playlist = await PlayList.findById(req.params.id);
+	  const user = await User.findById(req.user.id);
+		if(playlist){
+			 if(user.play_list.includes(playlist.id)){
+			 	  await User.updateOne({$pull:{play_list:playlist.id}})
+			 	  await PlayList.findByIdAndDelete(playlist.id);
+			 	  res.status(200).json({
+			 	  	response:{
+			 	  		 message:"Playlist deleted...",
+			 	  	}
+			 	  })
+			 }else{
+			 	 return res.status(403).json({
+			 	 	  message:'Playlist already delete!'
+			 	 })
+			 }
+		}else{
+			 return res.status(404).json({
+			 	 message:'Playlist not found!'
+			 })
+		}
+	}catch(err){
+		  return res.status(500).json({
 		 	 message:'Server error: something went wrong, please try again later',
 		 	 error:err
 		 })
