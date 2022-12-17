@@ -12,6 +12,13 @@ const trackSchema = new mongoose.Schema({
 	   type:String,
 	   required:true,
 	},
+	genre:{
+	  type:String,
+	  required:true
+	},
+	cover_img:{
+	  type:String
+	},
 	path:{
 	   type:String,
 	   required:true,

@@ -5,7 +5,6 @@ const socketIo = require("socket.io");
 const {createReadStream, createWriteStream} = require('fs')
 const DbConnection = require('./src/configs/dbConnection');
 const cors = require('./src/middlewares/cors');
-const authRoute = require('./src/routes/auth');
 const userRoute = require('./src/routes/user');
 const trackRoute = require('./src/routes/track');
 const playlistRoute = require('./src/routes/playlist');
@@ -33,15 +32,20 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 // routes
-app.use('/api/auth', authRoute);
+// app.use('/', homeRoute);
 app.use('/api/users', userRoute);
 app.use('/api/tracks', trackRoute);
 app.use('/api/playlists', playlistRoute);
 
 // routing error handler 
 app.use((req,res,next) => {
-   const err = new Error('Not Found');
-   err.status = 404
+   const err = new Error();
+   if(err.status === 404){
+	   	res.json({
+			 message:'Page not found!',
+			 error:err.message
+		})
+   }
    next(err);
 })
 

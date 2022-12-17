@@ -1,11 +1,9 @@
-const router = require('express').Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const verifyToken = require('../middlewares/Auth_verify');
 
 // USER SIGNUP ROUTE
-router.post('/signup', async (req,res) => {
+const userSignup = async (req,res) => {
 	 try{
 	  const {username,email} = req.body;
 	 	const user = await User.findOne({email});
@@ -41,7 +39,7 @@ router.post('/signup', async (req,res) => {
 	  		error:err
 	  	});
 	 }
-})
+}
 
 const refreshTokens = [];
 
@@ -57,7 +55,7 @@ const generateRefreshToken = (user) => {
 
 
 // USER SIGNIN ROUTE
-router.post('/signin', async(req,res) => {
+const userSignin = async(req,res) => {
   const {email,password} = req.body;
   try{
     const user = await User.findOne({email});
@@ -87,11 +85,11 @@ router.post('/signin', async(req,res) => {
 	  		error:err
 	  	});
   }
-});
+}
 
 
 // TOKEN REFRESH ROUTE
-router.post('/refresh', (req,res) => {
+const tokenRefresh = (req,res) => {
   const refreshToken = req.body.token;
 	  if(!refreshToken) return res.status(401).json({
 	  	 message:'You are not authenticated'
@@ -117,6 +115,26 @@ router.post('/refresh', (req,res) => {
 	  	  	refreshToken:newRefreshToken
 	  	  })
 	  })
-})
+}
 
-module.exports = router;
+
+// FORGET PASSWORD
+const forgetPassword = async (req,res) => {
+	try{
+
+	}catch(err){
+		return res.status(500).json({
+		 	response:{
+		 		 message:'Server error: something went wrong, please try again later',
+		 	 	 error:err
+		 	}
+		 })
+	}
+}
+
+module.exports = {
+	userSignup,
+	userSignin,
+	tokenRefresh,
+	forgetPassword
+}
