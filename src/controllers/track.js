@@ -311,8 +311,9 @@ const comment = async (req, res) => {
 };
 
 // LIVE BAND STREAMING
-const liveBandStream = async (req, res) => {
+const podCastStream = async (req, res) => {
   try {
+    //live streaming podcase feature function goes here.
   } catch (err) {
     return res.status(500).json({
       message: "Server error: something went wrong, please try again later",
@@ -329,5 +330,5 @@ module.exports = {
   trackDownload,
   like,
   comment,
-  liveBandStream,
+  podCastStream,
 };
