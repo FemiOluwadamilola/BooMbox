@@ -17,16 +17,10 @@ const userSchema = new mongoose.Schema({
     play_list:{
         type:Array
     },
-    favourity_tracks:{
-        type:Array
-    },
-    queue_tracks:{
-       type:Array
-    },
-    following:{
+    subscriping:{
     	type:Array
     },
-    followers:{
+    subscripers:{
     	type:Array
     }
 },{

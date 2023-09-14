@@ -1,9 +1,9 @@
 const router = require('express').Router();
-const {trackPlaylist,addTrackToPlaylist,userPlaylist,playlistShare,playlistFromFriend,deletePlaylist} = require('../controllers/playlist');
+const {createPlaylist,addTrackToPlaylist,userPlaylist,playlistShare,playlistFromFriend,deletePlaylist} = require('../controllers/playlist');
 const verifyToken = require('../middlewares/Auth_verify');
 
 // CREATE TRACK PLAYLIST
-router.post('/', verifyToken, trackPlaylist)
+router.post('/', verifyToken, createPlaylist)
 
 // ADD TRACKS TO PLAYLIST
 router.put('/', verifyToken, addTrackToPlaylist)

@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {tracks,uploadTrack,deleteTrack,streamTrack,trackDownload,like,comment} = require('../controllers/track');
+const {tracks,uploadTrack,deleteTrack,streamTrack,trackDownload,like,comment,liveBandStream} = require('../controllers/track');
 const verifyToken = require('../middlewares/Auth_verify');
 
 // GET ALL TRACKS ROUTE
@@ -21,7 +21,10 @@ router.get('/download/:id',verifyToken, trackDownload);
 router.get('/like/:id', verifyToken, like);
 
 // TRACK COMMENT
-router.post('/:id', verifyToken, comment)
+router.post('/:id', verifyToken, comment);
+
+// LIVEBAND STREAM
+router.get('/liveStream', verifyToken, liveBandStream);
 
 
 module.exports = router;
