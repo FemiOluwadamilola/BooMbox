@@ -1,3 +1,4 @@
+const { query } = require("express");
 const Track = require("../models/Track");
 
 const getTracks = async () => {
@@ -20,7 +21,7 @@ const getTrackBy = async (query) => {
 
 const addTrack = async (query) => {
   try {
-    const track = await Track.create(query);
+    const track = new Track(query);
     return track;
   } catch (err) {
     throw new Error(err.message);
@@ -54,6 +55,21 @@ const updateTrackBy = async (query) => {
   }
 };
 
+const searchTrack = async (query) => {
+  try {
+    const track = await Track.findOne({ title: query });
+    const relatedTracks = await Track.aggregate([
+      { $match: { artist: track.userId } },
+    ]);
+    return {
+      track,
+      relatedTracks: relatedTracks.title,
+    };
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
 module.exports = {
   getTracks,
   getTrackBy,
@@ -61,4 +77,5 @@ module.exports = {
   findTrackAndDelete,
   findTrackAndUpdateInfo,
   updateTrackBy,
+  searchTrack,
 };

@@ -8,6 +8,7 @@ const {
   like,
   comment,
   podCastStream,
+  searchForTrack,
 } = require("../controllers/track");
 const verifyToken = require("../middlewares/Auth_verify");
 
@@ -34,5 +35,8 @@ router.post("/:id", verifyToken, comment);
 
 // LIVEBAND STREAM
 router.get("/liveStream", verifyToken, podCastStream);
+
+// SEARCH TRACK
+router.get("/search", verifyToken, searchForTrack);
 
 module.exports = router;

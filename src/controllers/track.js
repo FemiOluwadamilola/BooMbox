@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
-const { getUserBy } = require("../services/user");
+const { getUserBy, getUser } = require("../services/user");
 const {
   getTracks,
   addTrack,
@@ -9,6 +9,7 @@ const {
   findTrackAndDelete,
   findTrackAndUpdateInfo,
   updateTrackBy,
+  searchTrack,
 } = require("../services/track");
 const PlayList = require("../models/Play_list");
 
@@ -70,7 +71,8 @@ const uploadTrack = async (req, res) => {
             });
 
             const savedTrack = newTrack.save();
-            res.status(201).json({
+
+            return res.status(201).json({
               message: "Track uploaded successfully...",
               _id: savedTrack._id,
               title: savedTrack.title,
@@ -81,7 +83,7 @@ const uploadTrack = async (req, res) => {
           return res.status(500).json({
             message:
               "Server error: something went wrong, please try again later",
-            error: err,
+            error: err.message,
           });
         }
       });
@@ -322,6 +324,26 @@ const podCastStream = async (req, res) => {
   }
 };
 
+// SEARCH FOR TRACK
+const searchForTrack = async (req, res) => {
+  try {
+    const userId = getUserBy(req.user.id);
+    if (userId) {
+      const track = searchTrack(req.body.track);
+      return res.status(200).json(track);
+    } else {
+      return res.status(403).json({
+        message: "Please signup!",
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: "Server error: something went wrong, please try again later",
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   tracks,
   uploadTrack,
@@ -331,4 +353,5 @@ module.exports = {
   like,
   comment,
   podCastStream,
+  searchForTrack,
 };
