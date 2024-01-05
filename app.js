@@ -21,6 +21,19 @@ DbConnection(mongoose);
 
 // cors
 // app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept,Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.headers("Access-Control-Allow-Methods", "GET,POST,DELETE,PATCH,PUT");
+    return res.status(200).json({});
+  }
+
+  return next();
+});
 
 // express middlewares
 app.use(express.urlencoded({ extended: false }));
@@ -40,25 +53,16 @@ app.use("/api/playlists", playlistRoute);
 
 // routing error handler
 app.use((req, res, next) => {
-  const err = new Error();
-  if (err.status === 404) {
-    res.json({
-      message: "Page not found!",
-      error: err.message,
-    });
-  }
-  next(err);
+  const error = new Error("page not found!");
+  error.status = 404;
+  next(error);
 });
 
-// server error handler
-app.use((err, req, res) => {
-  res.status(err.status || 500);
+app.use((error, req, res) => {
+  res.status(error.status || 500);
   res.json({
-    err: {
-      message: err.message,
-    },
+    message: error.message,
   });
 });
-
 // export app into server
 module.exports = app;

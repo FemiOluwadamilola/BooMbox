@@ -1,4 +1,5 @@
 const router = require("express").Router();
+
 const {
   tracks,
   uploadTrack,
@@ -10,6 +11,7 @@ const {
   podCastStream,
   searchForTrack,
 } = require("../controllers/track");
+
 const verifyToken = require("../middlewares/Auth_verify");
 
 // GET ALL TRACKS ROUTE
